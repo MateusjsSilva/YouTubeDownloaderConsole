@@ -3,69 +3,100 @@ using YoutubeExplode.Converter;
 
 class Program
 {
-    static async Task Main(string[] args)
+    static async Task Main()
     {
-        // Solicitar ao usuário que insira o caminho do arquivo de URLs
-        Console.WriteLine("Digite o caminho completo do arquivo de texto contendo as URLs do YouTube:");
-        string filePath = Console.ReadLine();
+        // Create a folder to store files
+        string storageFolder = Path.Combine(Environment.CurrentDirectory, "Files");
+        if (!Directory.Exists(storageFolder))
+        {
+            Directory.CreateDirectory(storageFolder);
+        }
 
-        // Verificar se o arquivo existe
+        string filePath = Path.Combine(storageFolder, "urls.txt");
+
+        Console.WriteLine($"Enter the full path of the text file containing YouTube URLs (or press Enter to use the default)");
+        Console.WriteLine($"Default: {filePath}):");
+
+        // Read the input file path from the user
+        string? inputFilePath = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(inputFilePath))
+        {
+            filePath = inputFilePath;
+        }
+
         if (!File.Exists(filePath))
         {
-            Console.WriteLine("Arquivo não encontrado. Certifique-se de que o caminho está correto.");
+            Console.WriteLine("File not found. Make sure the path is correct.");
             return;
         }
 
-        // Solicitar ao usuário que selecione a pasta de saída
-        Console.WriteLine("Digite o caminho completo da pasta onde os vídeos serão salvos:");
-        string outputFolder = Console.ReadLine();
+        // Paths to the ffmpeg, ffplay, and ffprobe files within the storage folder
+        string ffmpegPath = Path.Combine(storageFolder, "ffmpeg.exe");
+        string ffplayPath = Path.Combine(storageFolder, "ffplay.exe");
+        string ffprobePath = Path.Combine(storageFolder, "ffprobe.exe");
 
-        // Verificar se a pasta existe, caso contrário, criar
+        if (!File.Exists(ffmpegPath) || !File.Exists(ffplayPath) || !File.Exists(ffprobePath))
+        {
+            Console.WriteLine("ffmpeg, ffplay, or ffprobe files not found in the storage folder.");
+            return;
+        }
+
+        // Prompt the user to select the output folder
+        Console.WriteLine("Enter the full path of the folder where the videos will be saved:");
+        string? outputFolder = Console.ReadLine();
+
+        // Check if the folder exists, otherwise create it
+        if (string.IsNullOrWhiteSpace(outputFolder))
+        {
+            Console.WriteLine("Invalid output folder path.");
+            return;
+        }
+
         if (!Directory.Exists(outputFolder))
         {
             Directory.CreateDirectory(outputFolder);
         }
 
-        // Ler URLs do arquivo
+        // Read URLs from the file
         var urls = File.ReadAllLines(filePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
 
         if (urls.Count == 0)
         {
-            Console.WriteLine("O arquivo não contém URLs válidas.");
+            Console.WriteLine("The file does not contain valid URLs.");
             return;
         }
 
-        // Instanciar o cliente do YoutubeExplode
+        // Instantiate the YoutubeExplode client
         var youtube = new YoutubeClient();
 
-        // Processar cada URL e baixar o vídeo
         foreach (var url in urls)
         {
             try
             {
-                // Obter informações do vídeo
+                // Get video information
                 var video = await youtube.Videos.GetAsync(url);
 
-                // Caminho para salvar o vídeo
+                // Path to save the video
                 string filePathToSave = Path.Combine(outputFolder, $"{SanitizeFileName(video.Title)}.mp4");
 
-                // Baixar o vídeo com conversão
+                // Download the video with conversion
                 await youtube.Videos.DownloadAsync(url, filePathToSave, o => o
                     .SetContainer("mp4")
+                    .SetFFmpegPath(ffmpegPath)
                     .SetPreset(ConversionPreset.UltraFast));
 
-                Console.WriteLine($"Vídeo baixado: {video.Title}");
+                Console.WriteLine($"Video downloaded: {video.Title}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao baixar vídeo de {url}: {ex.Message}");
+                Console.WriteLine($"Error downloading video from {url}: {ex.Message}");
             }
         }
 
-        Console.WriteLine("Todos os vídeos foram processados.");
+        Console.WriteLine("All videos have been processed.");
     }
 
-    // Método para sanitizar o nome do arquivo, removendo caracteres inválidos
+    // Method to sanitize the file name, removing invalid characters
     private static string SanitizeFileName(string name)
     {
         return string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
