@@ -13,13 +13,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Files\ffmpeg.exe">
+    <None Update="Dependencies\ffmpeg.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Files\ffplay.exe">
+    <None Update="Dependencies\ffplay.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Files\ffprobe.exe">
+    <None Update="Dependencies\ffprobe.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\playlists.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Files\urls.txt">

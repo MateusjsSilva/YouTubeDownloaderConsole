@@ -1,5 +1,6 @@
-﻿using YoutubeExplode;
-using YoutubeExplode.Converter;
+﻿using YouTubeDownloaderConsole.Services;
+using YoutubeExplode;
+using YoutubeExplode.Common;
 
 class Program
 {
@@ -13,6 +14,7 @@ class Program
         }
 
         string filePath = Path.Combine(storageFolder, "urls.txt");
+        string playlistFilePath = Path.Combine(storageFolder, "playlists.txt");
 
         Console.WriteLine($"Enter the full path of the text file containing YouTube URLs (or press Enter to use the default)");
         Console.WriteLine($"Default: {filePath}):");
@@ -30,10 +32,27 @@ class Program
             return;
         }
 
+        Console.WriteLine($"Enter the full path of the text file containing YouTube Playlist URLs (or press Enter to use the default)");
+        Console.WriteLine($"Default: {playlistFilePath}):");
+
+        // Read the input playlist file path from the user
+        string? inputPlaylistFilePath = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(inputPlaylistFilePath))
+        {
+            playlistFilePath = inputPlaylistFilePath;
+        }
+
+        if (!File.Exists(playlistFilePath))
+        {
+            Console.WriteLine("Playlist file not found. Make sure the path is correct.");
+            return;
+        }
+
         // Paths to the ffmpeg, ffplay, and ffprobe files within the storage folder
-        string ffmpegPath = Path.Combine(storageFolder, "ffmpeg.exe");
-        string ffplayPath = Path.Combine(storageFolder, "ffplay.exe");
-        string ffprobePath = Path.Combine(storageFolder, "ffprobe.exe");
+        string dependencyPath = Path.Combine(Environment.CurrentDirectory, "Dependencies");
+        string ffmpegPath = Path.Combine(dependencyPath, "ffmpeg.exe");
+        string ffplayPath = Path.Combine(dependencyPath, "ffplay.exe");
+        string ffprobePath = Path.Combine(dependencyPath, "ffprobe.exe");
 
         if (!File.Exists(ffmpegPath) || !File.Exists(ffplayPath) || !File.Exists(ffprobePath))
         {
@@ -59,46 +78,26 @@ class Program
 
         // Read URLs from the file
         var urls = File.ReadAllLines(filePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
+        var playlistUrls = File.ReadAllLines(playlistFilePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
 
-        if (urls.Count == 0)
+        if (urls.Count == 0 && playlistUrls.Count == 0)
         {
-            Console.WriteLine("The file does not contain valid URLs.");
+            Console.WriteLine("The files do not contain valid URLs.");
             return;
         }
 
-        // Instantiate the YoutubeExplode client
         var youtube = new YoutubeClient();
 
         foreach (var url in urls)
         {
-            try
-            {
-                // Get video information
-                var video = await youtube.Videos.GetAsync(url);
+            await DownloadService.DownloadVideo(youtube, url, outputFolder, ffmpegPath);
+        }
 
-                // Path to save the video
-                string filePathToSave = Path.Combine(outputFolder, $"{SanitizeFileName(video.Title)}.mp4");
-
-                // Download the video with conversion
-                await youtube.Videos.DownloadAsync(url, filePathToSave, o => o
-                    .SetContainer("mp4")
-                    .SetFFmpegPath(ffmpegPath)
-                    .SetPreset(ConversionPreset.UltraFast));
-
-                Console.WriteLine($"Video downloaded: {video.Title}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error downloading video from {url}: {ex.Message}");
-            }
+        foreach (var playlistUrl in playlistUrls)
+        {
+            await DownloadService.DownloadPlaylist(youtube, playlistUrl, outputFolder, ffmpegPath);
         }
 
         Console.WriteLine("All videos have been processed.");
-    }
-
-    // Method to sanitize the file name, removing invalid characters
-    private static string SanitizeFileName(string name)
-    {
-        return string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
     }
 }
