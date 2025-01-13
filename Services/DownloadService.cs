@@ -23,13 +23,15 @@ namespace YouTubeDownloaderConsole.Services
                 // Path to save the video
                 string filePathToSave = Path.Combine(outputFolder, $"{SanitizeFileName(video.Title)}.mp4");
 
+                Console.WriteLine($"Downloading video: {video.Title} ...");
+
                 // Download the video with conversion
                 await youtube.Videos.DownloadAsync(url, filePathToSave, o => o
                     .SetContainer("mp4")
                     .SetFFmpegPath(ffmpegPath)
                     .SetPreset(ConversionPreset.UltraFast));
 
-                Console.WriteLine($"Video downloaded: {video.Title}");
+                Console.WriteLine($"Video downloaded.");
             }
             catch (Exception ex)
             {
@@ -53,6 +55,7 @@ namespace YouTubeDownloaderConsole.Services
 
                 foreach (var video in videos)
                 {
+                    Console.WriteLine($"Downloading video: {video.Title} from playlist...");
                     await DownloadVideo(youtube, video.Url, outputFolder, ffmpegPath);
                 }
             }

@@ -76,26 +76,53 @@ class Program
             Directory.CreateDirectory(outputFolder);
         }
 
-        // Read URLs from the file
-        var urls = File.ReadAllLines(filePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
-        var playlistUrls = File.ReadAllLines(playlistFilePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
+        Console.WriteLine($"Files will be saved to: {outputFolder}");
 
-        if (urls.Count == 0 && playlistUrls.Count == 0)
-        {
-            Console.WriteLine("The files do not contain valid URLs.");
-            return;
-        }
+        // Ask the user what they want to download
+        Console.WriteLine("What would you like to download?");
+        Console.WriteLine("1. Individual videos");
+        Console.WriteLine("2. Playlists");
+        Console.WriteLine("3. Both");
+        string? choice = Console.ReadLine();
 
         var youtube = new YoutubeClient();
 
-        foreach (var url in urls)
+        if (choice == "1" || choice == "3")
         {
-            await DownloadService.DownloadVideo(youtube, url, outputFolder, ffmpegPath);
+            // Read URLs from the file
+            var urls = File.ReadAllLines(filePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
+
+            if (urls.Count == 0)
+            {
+                Console.WriteLine("The file does not contain valid URLs.");
+            }
+            else
+            {
+                foreach (var url in urls)
+                {
+                    Console.WriteLine($"Downloading video from {url}...");
+                    await DownloadService.DownloadVideo(youtube, url, outputFolder, ffmpegPath);
+                }
+            }
         }
 
-        foreach (var playlistUrl in playlistUrls)
+        if (choice == "2" || choice == "3")
         {
-            await DownloadService.DownloadPlaylist(youtube, playlistUrl, outputFolder, ffmpegPath);
+            // Read playlist URLs from the file
+            var playlistUrls = File.ReadAllLines(playlistFilePath).Where(url => !string.IsNullOrWhiteSpace(url)).ToList();
+
+            if (playlistUrls.Count == 0)
+            {
+                Console.WriteLine("The file does not contain valid playlist URLs.");
+            }
+            else
+            {
+                foreach (var playlistUrl in playlistUrls)
+                {
+                    Console.WriteLine($"Downloading playlist from {playlistUrl}...");
+                    await DownloadService.DownloadPlaylist(youtube, playlistUrl, outputFolder, ffmpegPath);
+                }
+            }
         }
 
         Console.WriteLine("All videos have been processed.");
