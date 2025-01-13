@@ -23,8 +23,6 @@ namespace YouTubeDownloaderConsole.Services
                 // Path to save the video
                 string filePathToSave = Path.Combine(outputFolder, $"{SanitizeFileName(video.Title)}.mp4");
 
-                Console.WriteLine($"Downloading video: {video.Title} ...");
-
                 // Download the video with conversion
                 await youtube.Videos.DownloadAsync(url, filePathToSave, o => o
                     .SetContainer("mp4")

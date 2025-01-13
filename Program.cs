@@ -6,6 +6,18 @@ class Program
 {
     static async Task Main()
     {
+        // Display the menu
+        Console.WriteLine("=====================================");
+        Console.WriteLine("      YouTube Downloader Console     ");
+        Console.WriteLine("=====================================");
+        Console.WriteLine("What would you like to download?");
+        Console.WriteLine("1. Individual videos");
+        Console.WriteLine("2. Playlists");
+        Console.WriteLine("3. Both");
+        Console.Write("Option: ");
+        string? choice = Console.ReadLine();
+        Console.WriteLine("=====================================");
+
         // Create a folder to store files
         string storageFolder = Path.Combine(Environment.CurrentDirectory, "Files");
         if (!Directory.Exists(storageFolder))
@@ -13,39 +25,47 @@ class Program
             Directory.CreateDirectory(storageFolder);
         }
 
-        string filePath = Path.Combine(storageFolder, "urls.txt");
-        string playlistFilePath = Path.Combine(storageFolder, "playlists.txt");
+        string filePath = string.Empty;
+        string playlistFilePath = string.Empty;
 
-        Console.WriteLine($"Enter the full path of the text file containing YouTube URLs (or press Enter to use the default)");
-        Console.WriteLine($"Default: {filePath}):");
-
-        // Read the input file path from the user
-        string? inputFilePath = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(inputFilePath))
+        if (choice == "1" || choice == "3")
         {
-            filePath = inputFilePath;
+            filePath = Path.Combine(storageFolder, "urls.txt");
+            Console.WriteLine($"Enter the full path of the text file containing YouTube URLs (or press Enter to use the default)");
+            Console.WriteLine($"Default: {filePath}):");
+
+            // Read the input file path from the user
+            string? inputFilePath = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(inputFilePath))
+            {
+                filePath = inputFilePath;
+            }
+
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("File not found. Make sure the path is correct.");
+                return;
+            }
         }
 
-        if (!File.Exists(filePath))
+        if (choice == "2" || choice == "3")
         {
-            Console.WriteLine("File not found. Make sure the path is correct.");
-            return;
-        }
+            playlistFilePath = Path.Combine(storageFolder, "playlists.txt");
+            Console.WriteLine($"Enter the full path of the text file containing YouTube Playlist URLs (or press Enter to use the default)");
+            Console.WriteLine($"Default: {playlistFilePath}):");
 
-        Console.WriteLine($"Enter the full path of the text file containing YouTube Playlist URLs (or press Enter to use the default)");
-        Console.WriteLine($"Default: {playlistFilePath}):");
+            // Read the input playlist file path from the user
+            string? inputPlaylistFilePath = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(inputPlaylistFilePath))
+            {
+                playlistFilePath = inputPlaylistFilePath;
+            }
 
-        // Read the input playlist file path from the user
-        string? inputPlaylistFilePath = Console.ReadLine();
-        if (!string.IsNullOrWhiteSpace(inputPlaylistFilePath))
-        {
-            playlistFilePath = inputPlaylistFilePath;
-        }
-
-        if (!File.Exists(playlistFilePath))
-        {
-            Console.WriteLine("Playlist file not found. Make sure the path is correct.");
-            return;
+            if (!File.Exists(playlistFilePath))
+            {
+                Console.WriteLine("Playlist file not found. Make sure the path is correct.");
+                return;
+            }
         }
 
         // Paths to the ffmpeg, ffplay, and ffprobe files within the storage folder
@@ -77,13 +97,7 @@ class Program
         }
 
         Console.WriteLine($"Files will be saved to: {outputFolder}");
-
-        // Ask the user what they want to download
-        Console.WriteLine("What would you like to download?");
-        Console.WriteLine("1. Individual videos");
-        Console.WriteLine("2. Playlists");
-        Console.WriteLine("3. Both");
-        string? choice = Console.ReadLine();
+        Console.WriteLine("=====================================");
 
         var youtube = new YoutubeClient();
 
@@ -125,6 +139,8 @@ class Program
             }
         }
 
+        Console.WriteLine("=====================================");
         Console.WriteLine("All videos have been processed.");
+        Console.WriteLine("=====================================");
     }
 }
