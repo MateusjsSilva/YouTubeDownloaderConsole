@@ -20,6 +20,8 @@ namespace YouTubeDownloaderConsole.Services
                 // Get video information
                 var video = await youtube.Videos.GetAsync(url);
 
+                Console.WriteLine($"Downloading video: {video.Title}...");
+
                 // Path to save the video
                 string filePathToSave = Path.Combine(outputFolder, $"{SanitizeFileName(video.Title)}.mp4");
 
@@ -29,7 +31,11 @@ namespace YouTubeDownloaderConsole.Services
                     .SetFFmpegPath(ffmpegPath)
                     .SetPreset(ConversionPreset.UltraFast));
 
-                Console.WriteLine($"Video downloaded.");
+                Console.WriteLine($"Video downloaded: {video.Title}");
+            }
+            catch (YoutubeExplode.Exceptions.VideoUnplayableException ex)
+            {
+                Console.WriteLine($"The video is unplayable: {ex.Message}");
             }
             catch (Exception ex)
             {
