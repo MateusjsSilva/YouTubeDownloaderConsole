@@ -13,7 +13,6 @@ class Program
                 services.AddHostedService<Worker>();
                 services.AddSingleton<DownloadQueueService>();
                 services.AddSingleton<YoutubeDLSharpService>();
-                services.AddSingleton<YoutubeExplodeService>();
             })
             .Build();
 

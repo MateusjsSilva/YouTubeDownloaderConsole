@@ -14,7 +14,6 @@ namespace YouTubeDownloaderConsole.WorkerService
             // Add services
             builder.Services.AddSingleton<DownloadQueueService>();
             builder.Services.AddSingleton<YoutubeDLSharpService>();
-            builder.Services.AddSingleton<YoutubeExplodeService>();
 
             var host = builder.Build();
             host.Run();

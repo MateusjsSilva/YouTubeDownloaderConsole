@@ -1,5 +1,6 @@
 ﻿using YoutubeDLSharp.Options;
 using YoutubeDLSharp;
+using YouTubeDownloaderConsole.WorkerService.Models;
 
 namespace YouTubeDownloaderConsole.WorkerService.Services
 {
@@ -16,7 +17,7 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
             };
         }
 
-        public async Task DownloadVideoAsync(string url, string outputFolder, string cookiesPath)
+        public async Task<Result> DownloadVideoAsync(string url, string outputFolder, string cookiesPath)
         {
             try
             {
@@ -31,21 +32,20 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
 
                 if (result.Success)
                 {
-                    Console.WriteLine("Download concluído com yt-dlp!");
-                    Console.WriteLine($"Saída: {string.Join(Environment.NewLine, result.Data)}");
+                    return Result.SuccessResult($"Download concluído com yt-dlp!\nSaída: {string.Join(Environment.NewLine, result.Data)}");
                 }
                 else
                 {
-                    Console.WriteLine($"Erro no yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
+                    return Result.FailureResult($"Erro no yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao executar yt-dlp: {ex.Message}");
+                return Result.FailureResult($"Erro ao executar yt-dlp: {ex.Message}");
             }
         }
 
-        public async Task DownloadPlaylistAsync(string playlistUrl, string outputFolder, string cookiesPath)
+        public async Task<Result> DownloadPlaylistAsync(string playlistUrl, string outputFolder, string cookiesPath)
         {
             try
             {
@@ -59,16 +59,16 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
 
                 if (result.Success)
                 {
-                    Console.WriteLine("Download da playlist concluído com yt-dlp!");
+                    return Result.SuccessResult("Download da playlist concluído com yt-dlp!");
                 }
                 else
                 {
-                    Console.WriteLine($"Erro no yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
+                    return Result.FailureResult($"Erro no yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao executar yt-dlp: {ex.Message}");
+                return Result.FailureResult($"Erro ao executar yt-dlp: {ex.Message}");
             }
         }
 
