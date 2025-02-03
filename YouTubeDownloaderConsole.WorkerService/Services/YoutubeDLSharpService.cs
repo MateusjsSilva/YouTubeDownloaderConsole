@@ -1,6 +1,6 @@
 ﻿using YoutubeDLSharp.Options;
 using YoutubeDLSharp;
-using YouTubeDownloaderConsole.WorkerService.Models;
+using YouTubeDownloaderConsole.WorkerService.Exceptions;
 
 namespace YouTubeDownloaderConsole.WorkerService.Services
 {
@@ -8,6 +8,9 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
     {
         private readonly YoutubeDL _ytdl;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="YoutubeDLSharpService"/> class.
+        /// </summary>
         public YoutubeDLSharpService()
         {
             _ytdl = new YoutubeDL
@@ -17,7 +20,15 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
             };
         }
 
-        public async Task<Result> DownloadVideoAsync(string url, string outputFolder, string cookiesPath)
+        /// <summary>
+        /// Asynchronously downloads a video from the specified URL.
+        /// </summary>
+        /// <param name="url">The URL of the video to download.</param>
+        /// <param name="outputFolder">The output folder where the downloaded file will be saved.</param>
+        /// <param name="cookiesPath">The path to the cookies file.</param>
+        /// <returns>A task that represents the asynchronous download operation. The task result contains a boolean indicating success or failure.</returns>
+        /// <exception cref="WorkerExceptions">Thrown when an error occurs during the download process.</exception>
+        public async Task<bool> DownloadVideoAsync(string url, string outputFolder, string cookiesPath)
         {
             try
             {
@@ -30,22 +41,26 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
 
                 var result = await _ytdl.RunVideoDownload(url, overrideOptions: options);
 
-                if (result.Success)
-                {
-                    return Result.SuccessResult($"Download concluído com yt-dlp!\nSaída: {string.Join(Environment.NewLine, result.Data)}");
-                }
-                else
-                {
-                    return Result.FailureResult($"Erro no yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
-                }
+                if (!result.Success)
+                    throw new WorkerExceptions($"Error in yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
+
+                return true;
             }
             catch (Exception ex)
             {
-                return Result.FailureResult($"Erro ao executar yt-dlp: {ex.Message}");
+                throw new WorkerExceptions($"Error running yt-dlp: {ex.Message}");
             }
         }
 
-        public async Task<Result> DownloadPlaylistAsync(string playlistUrl, string outputFolder, string cookiesPath)
+        /// <summary>
+        /// Asynchronously downloads a playlist from the specified URL.
+        /// </summary>
+        /// <param name="playlistUrl">The URL of the playlist to download.</param>
+        /// <param name="outputFolder">The output folder where the downloaded files will be saved.</param>
+        /// <param name="cookiesPath">The path to the cookies file.</param>
+        /// <returns>A task that represents the asynchronous download operation. The task result contains a boolean indicating success or failure.</returns>
+        /// <exception cref="WorkerExceptions">Thrown when an error occurs during the download process.</exception>
+        public async Task<bool> DownloadPlaylistAsync(string playlistUrl, string outputFolder, string cookiesPath)
         {
             try
             {
@@ -57,25 +72,15 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
 
                 var result = await _ytdl.RunVideoPlaylistDownload(playlistUrl, overrideOptions: options);
 
-                if (result.Success)
-                {
-                    return Result.SuccessResult("Download da playlist concluído com yt-dlp!");
-                }
-                else
-                {
-                    return Result.FailureResult($"Erro no yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
-                }
+                if (!result.Success)
+                    throw new WorkerExceptions($"Error in yt-dlp: {string.Join(Environment.NewLine, result.ErrorOutput)}");
+
+                return true;
             }
             catch (Exception ex)
             {
-                return Result.FailureResult($"Erro ao executar yt-dlp: {ex.Message}");
+                throw new WorkerExceptions($"Error running yt-dlp: {ex.Message}");
             }
-        }
-
-        private string SanitizeFileName(string name)
-        {
-            var invalidChars = Path.GetInvalidFileNameChars();
-            return string.Join("_", name.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries)).Trim();
         }
     }
 }

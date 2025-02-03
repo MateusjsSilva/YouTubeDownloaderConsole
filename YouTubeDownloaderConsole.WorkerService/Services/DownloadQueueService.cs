@@ -2,11 +2,13 @@
 
 namespace YouTubeDownloaderConsole.WorkerService.Services
 {
-    public class DownloadTask(string url, bool isPlaylist)
+    public class DownloadTask(string url, bool isPlaylist, string outputFolder)
     {
         public string Url { get; } = url;
 
         public bool IsPlaylist { get; } = isPlaylist;
+
+        public string OutputFolder { get; } = outputFolder;
     }
 
     public class DownloadQueueService
@@ -19,9 +21,10 @@ namespace YouTubeDownloaderConsole.WorkerService.Services
         /// </summary>
         /// <param name="url">The URL of the video or playlist to download.</param>
         /// <param name="isPlaylist">Indicates whether the URL is a playlist.</param>
-        public void EnqueueDownload(string url, bool isPlaylist)
+        /// <param name="outputFolder">The output folder where the downloaded files will be saved.</param>
+        public void EnqueueDownload(string url, bool isPlaylist, string outputFolder)
         {
-            _queue.Enqueue(new DownloadTask(url, isPlaylist));
+            _queue.Enqueue(new DownloadTask(url, isPlaylist, outputFolder));
             _signal.Release();
         }
 

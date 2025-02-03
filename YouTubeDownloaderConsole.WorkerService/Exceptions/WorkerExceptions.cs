@@ -2,5 +2,8 @@
 {
     public class WorkerExceptions : Exception
     {
+        public WorkerExceptions() : base() { }
+
+        public WorkerExceptions(string message) : base(message) { }
     }
 }

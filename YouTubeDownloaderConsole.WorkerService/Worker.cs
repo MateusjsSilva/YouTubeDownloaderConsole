@@ -1,4 +1,3 @@
-using YouTubeDownloaderConsole.WorkerService.Models;
 using YouTubeDownloaderConsole.WorkerService.Services;
 
 namespace YouTubeDownloaderConsole.WorkerService
@@ -18,38 +17,29 @@ namespace YouTubeDownloaderConsole.WorkerService
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Worker iniciado e aguardando tarefas...");
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 var task = await _queueService.GetNextDownloadTaskAsync();
 
                 if (task != null)
                 {
-                    _logger.LogInformation("Iniciando download: {0}", task.Url);
-                    string outputFolder = Path.Combine(Environment.CurrentDirectory, "Downloads");
                     string cookiesPath = Path.Combine(Environment.CurrentDirectory, "Files", "cookies.txt");
-
-                    Result result;
 
                     if (task.IsPlaylist)
                     {
-                        result = await _youtubeDLSharpService.DownloadPlaylistAsync(task.Url, outputFolder, cookiesPath);
+                        await _youtubeDLSharpService.DownloadPlaylistAsync(task.Url, task.OutputFolder, cookiesPath);
                     }
                     else
                     {
-                        result = await _youtubeDLSharpService.DownloadVideoAsync(task.Url, outputFolder, cookiesPath);
-                    }
-
-                    if (result.Success)
-                    {
-                        _logger.LogInformation(result.Message);
-                    }
-                    else
-                    {
-                        _logger.LogError(result.Error);
+                        await _youtubeDLSharpService.DownloadVideoAsync(task.Url, task.OutputFolder, cookiesPath);
                     }
                 }
+                else
+                {
+                    break;
+                }
+
+                await Task.Delay(2000, stoppingToken);
             }
         }
     }
