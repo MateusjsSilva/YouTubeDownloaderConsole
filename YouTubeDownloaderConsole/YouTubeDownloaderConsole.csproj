@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\YouTubeDownloaderConsole.WorkerService\YouTubeDownloaderConsole.WorkerService.csproj" />
   </ItemGroup>
 
